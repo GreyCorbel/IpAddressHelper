@@ -1,0 +1,52 @@
+name: publishToPSGallery
+
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+#   push:
+#     branches: [ "main" ]
+  # Allows you to run this workflow manually from the Actions tab
+
+  workflow_dispatch:
+    inputs:
+      publish:
+        type: boolean
+        description: 'Publish to powershell gallery'     
+        required: false
+        default: false
+
+env:
+  POWERSHELL_API_KEY : ${{secrets.GC_PSGALLERY_APIKEY}}
+  MODULE_NAME: "IPAddressHelper"
+
+jobs:
+  publish:
+    runs-on: windows-latest #self-hosted #windows-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: AssemblyPowershelModule for prepare modules files into outputModule directory
+      shell: pwsh
+      run: |
+          .\AssemblyPowershelModule.ps1 -RootDirectory $env:GITHUB_WORKSPACE -ModuleName $env:MODULE_NAME
+
+    - name: Parametres
+      run: |
+        echo "event_name: ${{github.event_name}}"
+        echo "inputs.publish: ${{github.event.inputs.publish}}"
+
+    - name: Publish to gallery
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.publish=='true' }}
+      shell: pwsh
+      env:
+          SECRET: ${{env.POWERSHELL_API_KEY}}
+      run: |
+          write-host "Publishing from: $env:GITHUB_WORKSPACE\outputModule\IPAddressHelper"
+          try
+          {
+            Publish-PSResource -Path "$env:GITHUB_WORKSPACE\outputModule\IPAddressHelper" -Repository PSGallery -APIKey "$env:SECRET"
+          }
+          catch
+          {
+            Write-Host "Error: $($_.Exception)"
+            throw
+          }
