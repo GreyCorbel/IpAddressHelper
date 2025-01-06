@@ -30,7 +30,7 @@ CompanyName = 'GreyCorbel Solutions'
 Copyright = '(c) Jiri Formacek. All rights reserved.'
 
 # Description of the functionality provided by this module
-# Description = 'Modul loads IPv4AddressHelper.cs and init this library'
+Description = 'Module provides utility functions for manipulation with IPv4 and IPv6 addresses and networks'
 
 # Minimum version of the PowerShell engine required by this module
 PowerShellVersion = '7.2'
